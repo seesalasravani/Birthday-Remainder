@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Reminder App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: pink;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px 0;
+            width: calc(100% - 22px);
+            border: 1px solid blue;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #add-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-edit {
+            background-color: #ffc107;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            margin-left: 10px;
+        }
+
+        #birthday-list {
+            margin-top: 20px;
+        }
+
+        .birthday-item {
+            background-color: #ffffff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .countdown {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .buttons {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <h1>Birthday Reminder App</h1>
+    <input type="text" id="name" placeholder="Name">
+    <input type="date" id="date" placeholder="Date">
+    <button id="add-btn">Add Birthday</button>
+    <div id="birthday-list"></div>
+    <script>
+        const addBtn = document.getElementById('add-btn');
+        const nameInput = document.getElementById('name');
+        const dateInput = document.getElementById('date');
+        const birthdayList = document.getElementById('birthday-list');
+
+        let birthdays = [];
+        let editIndex = null;
+
+        addBtn.addEventListener('click', () => {
+            const name = nameInput.value;
+            const date = dateInput.value;
+
+            if (editIndex !== null) {
+                birthdays[editIndex] = { name, date };
+                editIndex = null;
+            } else {
+                birthdays.push({ name, date });
+            }
+
+            displayBirthdays();
+            nameInput.value = '';
+            dateInput.value = '';
+        });
+
+        function displayBirthdays() {
+            birthdayList.innerHTML = '';
+            birthdays.forEach((birthday, index) => {
+                const birthdayItem = document.createElement('div');
+                birthdayItem.classList.add('birthday-item');
+                birthdayItem.innerHTML = `
+                    <div>
+                        ${birthday.name} - ${birthday.date}
+                        <span class="countdown"></span>
+                    </div>
+                    <div class="buttons">
+                        <button class="btn-edit" onclick="editBirthday(${index})">Edit</button>
+                        <button class="btn-delete" onclick="deleteBirthday(${index})">Delete</button>
+                    </div>
+                `;
+                birthdayList.appendChild(birthdayItem);
+                countdown(birthday.date, birthdayItem.querySelector('.countdown'));
+            });
+        }
+
+        function countdown(date, element) {
+            const birthdayDate = new Date(date);
+            const today = new Date();
+
+            birthdayDate.setFullYear(today.getFullYear());
+            if (birthdayDate < today) {
+                birthdayDate.setFullYear(today.getFullYear() + 1);
+            }
+
+            function updateCountdown() {
+                const timeDiff = birthdayDate.getTime() - new Date().getTime();
+                const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+                element.textContent = `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+
+                if (timeDiff <= 0) {
+                    element.textContent = "Happy Birthday!";
+                    clearInterval(interval);
+                }
+            }
+
+            updateCountdown();
+            const interval = setInterval(updateCountdown, 1000);
+        }
+
+        function editBirthday(index) {
+            const birthday = birthdays[index];
+            nameInput.value = birthday.name;
+            dateInput.value = birthday.date;
+            editIndex = index;
+        }
+
+        function deleteBirthday(index) {
+            birthdays.splice(index, 1);
+            displayBirthdays();
+        }
+
+        displayBirthdays();
+    </script>
+</body>
+</html>
